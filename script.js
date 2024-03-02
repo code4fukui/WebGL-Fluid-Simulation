@@ -73,6 +73,8 @@ let config = {
     COLOR: 0xffffff,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
+    RANDOM_AMOUNT: 10,
+    RANDOM_REPEAT_DELAY: 0,
     BACK_COLOR: 0x000000,
     TRANSPARENT: false,
     BLOOM: true,
@@ -222,8 +224,17 @@ function startGUI () {
     gui.add(config, 'PAUSED').name('paused').listen();
 
     gui.add({ fun: () => {
-        splatStack.push(parseInt(Math.random() * 20) + 5);
+        const rnd = () => {
+            //const amount = parseInt(Math.random() * 20) + 5;
+            const amount = config.RANDOM_AMOUNT;
+            splatStack.push(amount);
+            const delay = config.RANDOM_REPEAT_DELAY;
+            if (delay) setTimeout(rnd, delay);
+        };
+        rnd();
     } }, 'fun').name('Random splats');
+    gui.add(config, 'RANDOM_AMOUNT', 1, 50).name('random splat amount');
+    gui.add(config, 'RANDOM_REPEAT_DELAY', 0, 5000).name('repeat delay (msec)');
 
     let bloomFolder = gui.addFolder('Bloom');
     bloomFolder.add(config, 'BLOOM').name('enabled').onFinishChange(updateKeywords);
@@ -242,7 +253,7 @@ function startGUI () {
     let github = gui.add({ fun : () => {
         window.open('https://github.com/PavelDoGreat/WebGL-Fluid-Simulation');
         //ga('send', 'event', 'link button', 'github');
-    } }, 'fun').name('Github');
+    } }, 'fun').name('GitHub');
     //github.__li.className = 'cr function bigFont';
     //github.__li.style.borderLeft = '3px solid #8C8C8C';
     let githubIcon = document.createElement('span');
@@ -278,6 +289,10 @@ function startGUI () {
     let appIcon = document.createElement('span');
     app.domElement.parentElement.appendChild(appIcon);
     appIcon.className = 'icon app';
+
+    gui.add({ fun: () => {
+        canvas.requestFullscreen();
+    } }, 'fun').name('Fullscreen');
 
     if (isMobile())
         gui.close();
