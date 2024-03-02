@@ -62,11 +62,11 @@ let config = {
     DYE_RESOLUTION: 1024,
     CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1,
-    VELOCITY_DISSIPATION: 0.2,
-    PRESSURE: 0.8,
+    VELOCITY_DISSIPATION: 0.1,
+    PRESSURE: 0.2,
     PRESSURE_ITERATIONS: 20,
-    CURL: 30,
-    SPLAT_RADIUS: 0.25,
+    CURL: 5,
+    SPLAT_RADIUS: 0.5,
     SPLAT_FORCE: 6000,
     SHADING: true,
     COLORFUL: true,
@@ -74,7 +74,7 @@ let config = {
     COLOR_UPDATE_TIME: 0,
     PAUSED: false,
     RANDOM_AMOUNT: 10,
-    RANDOM_REPEAT: false,
+    RANDOM_REPEAT: true,
     RANDOM_REPEAT_DELAY: 1000,
     BACK_COLOR: 0x000000,
     TRANSPARENT: false,
@@ -223,29 +223,10 @@ function startGUI () {
     gui.add(config, 'SPLAT_RADIUS', 0.01, 1.0).name('splat radius');
     gui.add(config, 'SHADING').name('shading').onFinishChange(updateKeywords);
     gui.add(config, 'COLORFUL').name('colorful');
-    gui.add(config, 'COLOR_UPDATE_TIME', 0, 60000).name('color update time (msec)');
+    gui.add(config, 'COLOR_UPDATE_TIME', 0, 5000).name('color update time (msec)');
     gui.addColor(config, 'COLOR').name('color');
     gui.add(config, 'PAUSED').name('paused').listen();
-
-    let rndtimer = null;
-    gui.add({ fun: () => {
-        const rnd = () => {
-            //const amount = parseInt(Math.random() * 20) + 5;
-            const amount = config.RANDOM_AMOUNT;
-            splatStack.push(amount);
-            if (config.RANDOM_REPEAT) {
-                const delay = config.RANDOM_REPEAT_DELAY;
-                if (delay) {
-                    rndtimer = setTimeout(rnd, delay);
-                }
-            }
-        };
-        if (rndtimer) {
-            clearTimeout(rndtimer);
-            rndtimer = null;
-        }
-        rnd();
-    } }, 'fun').name('Random splats');
+    gui.add({ fun: () => splatsRandom() }, 'fun').name('Random splats');
     gui.add(config, 'RANDOM_AMOUNT', 1, 100, 1).name('random splat amount');
     gui.add(config, 'RANDOM_REPEAT').name('random repeat');
     gui.add(config, 'RANDOM_REPEAT_DELAY', 0, 5000).name('repeat delay (msec)');
@@ -1200,7 +1181,29 @@ function updateKeywords () {
 
 updateKeywords();
 initFramebuffers();
-multipleSplats(parseInt(Math.random() * 20) + 5);
+
+//multipleSplats(parseInt(Math.random() * 20) + 5);
+let rndtimer = null;
+const splatsRandom = () => {
+    const rnd = () => {
+        //const amount = parseInt(Math.random() * 20) + 5;
+        const amount = config.RANDOM_AMOUNT;
+        splatStack.push(amount);
+        if (config.RANDOM_REPEAT) {
+            const delay = config.RANDOM_REPEAT_DELAY;
+            if (delay) {
+                rndtimer = setTimeout(rnd, delay);
+            }
+        }
+    };
+    if (rndtimer) {
+        clearTimeout(rndtimer);
+        rndtimer = null;
+    }
+    rnd();
+};
+
+splatsRandom();
 
 let lastUpdateTime = performance.now();
 update();
