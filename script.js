@@ -71,7 +71,7 @@ let config = {
     SHADING: true,
     COLORFUL: true,
     COLOR: 0xffffff,
-    COLOR_UPDATE_SPEED: 10,
+    COLOR_UPDATE_TIME: 0,
     PAUSED: false,
     RANDOM_AMOUNT: 10,
     RANDOM_REPEAT_DELAY: 0,
@@ -98,10 +98,12 @@ function pointerPrototype () {
     this.deltaY = 0;
     this.down = false;
     this.moved = false;
-    this.color = [30, 0, 300];
+    //this.color = [30, 0, 300];
 }
 
 let pointers = [];
+let activecolor = null;
+let colorUpdateTimer = 0.0;
 let splatStack = [];
 pointers.push(new pointerPrototype());
 
@@ -220,20 +222,28 @@ function startGUI () {
     gui.add(config, 'SPLAT_RADIUS', 0.01, 1.0).name('splat radius');
     gui.add(config, 'SHADING').name('shading').onFinishChange(updateKeywords);
     gui.add(config, 'COLORFUL').name('colorful');
+    gui.add(config, 'COLOR_UPDATE_TIME', 0, 60000).name('color update time (msec)');
     gui.addColor(config, 'COLOR').name('color');
     gui.add(config, 'PAUSED').name('paused').listen();
 
+    let rndtimer = null;
     gui.add({ fun: () => {
         const rnd = () => {
             //const amount = parseInt(Math.random() * 20) + 5;
             const amount = config.RANDOM_AMOUNT;
             splatStack.push(amount);
             const delay = config.RANDOM_REPEAT_DELAY;
-            if (delay) setTimeout(rnd, delay);
+            if (delay) {
+                rndtimer = setTimeout(rnd, delay);
+            }
         };
+        if (rndtimer) {
+            clearTimeout(rndtimer);
+            rndtimer = null;
+        }
         rnd();
     } }, 'fun').name('Random splats');
-    gui.add(config, 'RANDOM_AMOUNT', 1, 50).name('random splat amount');
+    gui.add(config, 'RANDOM_AMOUNT', 1, 100, 1).name('random splat amount');
     gui.add(config, 'RANDOM_REPEAT_DELAY', 0, 5000).name('repeat delay (msec)');
 
     let bloomFolder = gui.addFolder('Bloom');
@@ -1187,8 +1197,7 @@ updateKeywords();
 initFramebuffers();
 multipleSplats(parseInt(Math.random() * 20) + 5);
 
-let lastUpdateTime = Date.now();
-let colorUpdateTimer = 0.0;
+let lastUpdateTime = performance.now();
 update();
 
 function update () {
@@ -1204,9 +1213,9 @@ function update () {
 }
 
 function calcDeltaTime () {
-    let now = Date.now();
+    const now = performance.now();
     let dt = (now - lastUpdateTime) / 1000;
-    dt = Math.min(dt, 0.016666);
+    //dt = Math.min(dt, 0.016666);
     lastUpdateTime = now;
     return dt;
 }
@@ -1223,15 +1232,7 @@ function resizeCanvas () {
 }
 
 function updateColors (dt) {
-    if (!config.COLORFUL) return;
-
-    colorUpdateTimer += dt * config.COLOR_UPDATE_SPEED;
-    if (colorUpdateTimer >= 1) {
-        colorUpdateTimer = wrap(colorUpdateTimer, 0, 1);
-        pointers.forEach(p => {
-            p.color = generateColor();
-        });
-    }
+    colorUpdateTimer += dt;
 }
 
 function applyInputs () {
@@ -1437,9 +1438,10 @@ function blur (target, temp, iterations) {
 }
 
 function splatPointer (pointer) {
-    let dx = pointer.deltaX * config.SPLAT_FORCE;
-    let dy = pointer.deltaY * config.SPLAT_FORCE;
-    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color);
+    const dx = pointer.deltaX * config.SPLAT_FORCE;
+    const dy = pointer.deltaY * config.SPLAT_FORCE;
+    const color = generateColor();
+    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, color);
 }
 
 function multipleSplats (amount) {
@@ -1551,7 +1553,7 @@ function updatePointerDownData (pointer, id, posX, posY) {
     pointer.prevTexcoordY = pointer.texcoordY;
     pointer.deltaX = 0;
     pointer.deltaY = 0;
-    pointer.color = generateColor();
+    //pointer.color = generateColor();
 }
 
 function updatePointerMoveData (pointer, posX, posY) {
@@ -1580,12 +1582,25 @@ function correctDeltaY (delta) {
     return delta;
 }
 
-function generateColor () {
-    const c = config.COLORFUL ? HSVtoRGB(Math.random(), 1.0, 1.0) : normalizeColor(config.COLOR);
+function darkerColor (c) {
     c.r *= 0.15;
     c.g *= 0.15;
     c.b *= 0.15;
     return c;
+}
+
+function generateColor () {
+    if (!config.COLORFUL) {
+        return darkerColor(normalizeColor(config.COLOR));
+    }
+    if (!activecolor || colorUpdateTimer >= config.COLOR_UPDATE_TIME / 1000) {
+        //colorUpdateTimer = wrap(colorUpdateTimer, 0, 1);
+        colorUpdateTimer -= config.COLOR_UPDATE_TIME / 1000;
+        activecolor = darkerColor(HSVtoRGB(Math.random(), 1.0, 1.0));
+    }
+    const res = {};
+    Object.assign(res, activecolor);
+    return res;
 }
 
 function HSVtoRGB (h, s, v) {
