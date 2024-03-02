@@ -62,30 +62,30 @@ let config = {
     DYE_RESOLUTION: 1024,
     TEXTURE_CLAMP: 0,
     CAPTURE_RESOLUTION: 512,
-    DENSITY_DISSIPATION: 1,
+    DENSITY_DISSIPATION: 0.5,
     VELOCITY_DISSIPATION: 0.1,
-    PRESSURE: 0.2,
+    PRESSURE: 0.3,
     PRESSURE_ITERATIONS: 20,
     CURL: 5,
-    SPLAT_RADIUS: 0.5,
+    SPLAT_RADIUS: 1.0,
     SPLAT_FORCE: 6000,
     SHADING: true,
     COLORFUL: true,
     COLOR: 0xffffff,
     COLOR_UPDATE_TIME: 0,
     PAUSED: false,
-    RANDOM_AMOUNT: 10,
+    RANDOM_AMOUNT: 15,
     RANDOM_REPEAT: true,
     RANDOM_REPEAT_DELAY: 1000,
     BACK_COLOR: 0x000000,
     TRANSPARENT: false,
-    BLOOM: true,
+    BLOOM: false,
     BLOOM_ITERATIONS: 8,
     BLOOM_RESOLUTION: 256,
     BLOOM_INTENSITY: 0.8,
     BLOOM_THRESHOLD: 0.6,
     BLOOM_SOFT_KNEE: 0.7,
-    SUNRAYS: true,
+    SUNRAYS: false,
     SUNRAYS_RESOLUTION: 196,
     SUNRAYS_WEIGHT: 1.0,
 }
@@ -217,12 +217,12 @@ function startGUI () {
     const gui = new GUI({ width: 300 });
     gui.add(config, 'DYE_RESOLUTION', { 'high': 1024, 'medium': 512, 'low': 256, 'very low': 128 }).name('quality').onFinishChange(initFramebuffers);
     gui.add(config, 'SIM_RESOLUTION', { '32': 32, '64': 64, '128': 128, '256': 256 }).name('sim resolution').onFinishChange(initFramebuffers);
-    gui.add(config, 'TEXTURE_CLAMP', { 'clamp': 0, 'repeat': 1, 'mirrored repeat': 2 }).name('texture clamp').onFinishChange(initFramebuffers);
+    //gui.add(config, 'TEXTURE_CLAMP', { 'clamp': 0, 'repeat': 1, 'mirrored repeat': 2 }).name('texture clamp').onFinishChange(initFramebuffers);
     gui.add(config, 'DENSITY_DISSIPATION', 0, 4.0).name('density diffusion');
     gui.add(config, 'VELOCITY_DISSIPATION', 0, 4.0).name('velocity diffusion');
     gui.add(config, 'PRESSURE', 0.0, 1.0).name('pressure');
     gui.add(config, 'CURL', 0, 50).name('vorticity').step(1);
-    gui.add(config, 'SPLAT_RADIUS', 0.01, 1.0).name('splat radius');
+    gui.add(config, 'SPLAT_RADIUS', 0.01, 2.0).name('splat radius');
     gui.add(config, 'SHADING').name('shading').onFinishChange(updateKeywords);
     gui.add(config, 'COLORFUL').name('colorful');
     gui.add(config, 'COLOR_UPDATE_TIME', 0, 5000).name('color update time (msec)');
@@ -247,15 +247,17 @@ function startGUI () {
     captureFolder.add(config, 'TRANSPARENT').name('transparent');
     captureFolder.add({ fun: captureScreenshot }, 'fun').name('take screenshot');
 
-    let github = gui.add({ fun : () => {
+    const github = gui.add({ fun : () => {
         //window.open('https://github.com/PavelDoGreat/WebGL-Fluid-Simulation');
         open("https://github.com/code4fukui/WebGL-Fluid-Simulation");
         //ga('send', 'event', 'link button', 'github');
     } }, 'fun').name('GitHub');
     //github.__li.className = 'cr function bigFont';
     //github.__li.style.borderLeft = '3px solid #8C8C8C';
-    let githubIcon = document.createElement('span');
-    github.domElement.parentElement.appendChild(githubIcon);
+    //github.domElement.className = "github";
+    const githubIcon = document.createElement('span');
+    github.domElement.parentElement.insertBefore(githubIcon, github.domElement);
+    //github.domElement.parentElement.appendChild(githubIcon);
     githubIcon.className = 'icon github';
 
     let twitter = gui.add({ fun : () => {
@@ -265,7 +267,7 @@ function startGUI () {
     //twitter.__li.className = 'cr function bigFont';
     //twitter.__li.style.borderLeft = '3px solid #8C8C8C';
     let twitterIcon = document.createElement('span');
-    twitter.domElement.parentElement.appendChild(twitterIcon);
+    twitter.domElement.parentElement.insertBefore(twitterIcon, twitter.domElement);
     twitterIcon.className = 'icon twitter';
     
     /*
@@ -287,7 +289,7 @@ function startGUI () {
     //app.__li.className = 'cr function appBigFont';
     //app.__li.style.borderLeft = '3px solid #00FF7F';
     let appIcon = document.createElement('span');
-    app.domElement.parentElement.appendChild(appIcon);
+    app.domElement.parentElement.insertBefore(appIcon, app.domElement);
     appIcon.className = 'icon app';
 
     gui.add({ fun: () => {
