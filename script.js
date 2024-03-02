@@ -25,7 +25,7 @@ SOFTWARE.
 import { GUI } from "https://cdn.jsdelivr.net/npm/lil-gui@0.16.1/dist/lil-gui.esm.min.js";
 
 // Mobile promo section
-
+/*
 const promoPopup = document.getElementsByClassName('promo')[0];
 const promoPopupClose = document.getElementsByClassName('promo-close')[0];
 
@@ -50,6 +50,7 @@ googleLink.addEventListener('click', e => {
     //ga('send', 'event', 'link promo', 'app');
     window.open('https://play.google.com/store/apps/details?id=games.paveldogreat.fluidsimfree');
 });
+*/
 
 // Simulation section
 
@@ -69,9 +70,10 @@ let config = {
     SPLAT_FORCE: 6000,
     SHADING: true,
     COLORFUL: true,
+    COLOR: 0xffffff,
     COLOR_UPDATE_SPEED: 10,
     PAUSED: false,
-    BACK_COLOR: { r: 0, g: 0, b: 0 },
+    BACK_COLOR: 0x000000,
     TRANSPARENT: false,
     BLOOM: true,
     BLOOM_ITERATIONS: 8,
@@ -206,7 +208,7 @@ function supportRenderTextureFormat (gl, internalFormat, format, type) {
 }
 
 function startGUI () {
-    var gui = new GUI({ width: 300 });
+    const gui = new GUI({ width: 300 });
     gui.add(config, 'DYE_RESOLUTION', { 'high': 1024, 'medium': 512, 'low': 256, 'very low': 128 }).name('quality').onFinishChange(initFramebuffers);
     gui.add(config, 'SIM_RESOLUTION', { '32': 32, '64': 64, '128': 128, '256': 256 }).name('sim resolution').onFinishChange(initFramebuffers);
     gui.add(config, 'DENSITY_DISSIPATION', 0, 4.0).name('density diffusion');
@@ -216,6 +218,7 @@ function startGUI () {
     gui.add(config, 'SPLAT_RADIUS', 0.01, 1.0).name('splat radius');
     gui.add(config, 'SHADING').name('shading').onFinishChange(updateKeywords);
     gui.add(config, 'COLORFUL').name('colorful');
+    gui.addColor(config, 'COLOR').name('color');
     gui.add(config, 'PAUSED').name('paused').listen();
 
     gui.add({ fun: () => {
@@ -1563,7 +1566,7 @@ function correctDeltaY (delta) {
 }
 
 function generateColor () {
-    let c = HSVtoRGB(Math.random(), 1.0, 1.0);
+    const c = config.COLORFUL ? HSVtoRGB(Math.random(), 1.0, 1.0) : normalizeColor(config.COLOR);
     c.r *= 0.15;
     c.g *= 0.15;
     c.b *= 0.15;
@@ -1594,8 +1597,17 @@ function HSVtoRGB (h, s, v) {
     };
 }
 
+function color2rgb(n) {
+    return {
+        r: (n >> 16) & 0xff,
+        g: (n >> 8) & 0xff,
+        b: n & 0xff,
+    };
+};
+
 function normalizeColor (input) {
-    let output = {
+    input = color2rgb(input);
+    const output = {
         r: input.r / 255,
         g: input.g / 255,
         b: input.b / 255
