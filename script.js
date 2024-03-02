@@ -265,7 +265,8 @@ function startGUI () {
     captureFolder.add({ fun: captureScreenshot }, 'fun').name('take screenshot');
 
     let github = gui.add({ fun : () => {
-        window.open('https://github.com/PavelDoGreat/WebGL-Fluid-Simulation');
+        //window.open('https://github.com/PavelDoGreat/WebGL-Fluid-Simulation');
+        open("https://github.com/code4fukui/WebGL-Fluid-Simulation");
         //ga('send', 'event', 'link button', 'github');
     } }, 'fun').name('GitHub');
     //github.__li.className = 'cr function bigFont';
