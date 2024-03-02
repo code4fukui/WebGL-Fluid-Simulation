@@ -265,7 +265,8 @@ function startGUI () {
     let twitterIcon = document.createElement('span');
     twitter.domElement.parentElement.appendChild(twitterIcon);
     twitterIcon.className = 'icon twitter';
-
+    
+    /*
     let discord = gui.add({ fun : () => {
         //ga('send', 'event', 'link button', 'discord');
         window.open('https://discordapp.com/invite/CeqZDDE');
@@ -275,7 +276,8 @@ function startGUI () {
     let discordIcon = document.createElement('span');
     discord.domElement.parentElement.appendChild(discordIcon);
     discordIcon.className = 'icon discord';
-
+    */
+    
     let app = gui.add({ fun : () => {
         //ga('send', 'event', 'link button', 'app');
         window.open('http://onelink.to/5b58bn');
