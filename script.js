@@ -60,6 +60,7 @@ resizeCanvas();
 let config = {
     SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
+    TEXTURE_CLAMP: 0,
     CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1,
     VELOCITY_DISSIPATION: 0.1,
@@ -216,6 +217,7 @@ function startGUI () {
     const gui = new GUI({ width: 300 });
     gui.add(config, 'DYE_RESOLUTION', { 'high': 1024, 'medium': 512, 'low': 256, 'very low': 128 }).name('quality').onFinishChange(initFramebuffers);
     gui.add(config, 'SIM_RESOLUTION', { '32': 32, '64': 64, '128': 128, '256': 256 }).name('sim resolution').onFinishChange(initFramebuffers);
+    gui.add(config, 'TEXTURE_CLAMP', { 'clamp': 0, 'repeat': 1, 'mirrored repeat': 2 }).name('texture clamp').onFinishChange(initFramebuffers);
     gui.add(config, 'DENSITY_DISSIPATION', 0, 4.0).name('density diffusion');
     gui.add(config, 'VELOCITY_DISSIPATION', 0, 4.0).name('velocity diffusion');
     gui.add(config, 'PRESSURE', 0.0, 1.0).name('pressure');
@@ -277,7 +279,7 @@ function startGUI () {
     discord.domElement.parentElement.appendChild(discordIcon);
     discordIcon.className = 'icon discord';
     */
-    
+
     let app = gui.add({ fun : () => {
         //ga('send', 'event', 'link button', 'app');
         window.open('http://onelink.to/5b58bn');
@@ -1064,8 +1066,12 @@ function createFBO (w, h, internalFormat, format, type, param) {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, param);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, param);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const clamp = [gl.CLAMP_TO_EDGE, gl.REPEAT, gl.MIRRORED_REPEAT][config.TEXTURE_CLAMP];
+    //const clamp = gl.CLAMP_TO_EDGE
+    //const clamp = gl.REPEAT;
+    //const clamp = gl.MIRRORED_REPEAT;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, clamp);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, clamp);
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, w, h, 0, format, type, null);
 
     let fbo = gl.createFramebuffer();
@@ -1548,9 +1554,9 @@ window.addEventListener('touchend', e => {
 
 window.addEventListener('keydown', e => {
     if (e.code === 'KeyP')
-        config.PAUSED = !config.PAUSED;
+       config.PAUSED = !config.PAUSED;
     if (e.key === ' ')
-        splatStack.push(parseInt(Math.random() * 20) + 5);
+        splatsRandom();
 });
 
 function updatePointerDownData (pointer, id, posX, posY) {
