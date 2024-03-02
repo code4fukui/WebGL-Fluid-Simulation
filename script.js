@@ -58,7 +58,7 @@ const canvas = document.getElementsByTagName('canvas')[0];
 resizeCanvas();
 
 let config = {
-    SIM_RESOLUTION: 128,
+    SIM_RESOLUTION: 256,
     DYE_RESOLUTION: 1024,
     CAPTURE_RESOLUTION: 512,
     DENSITY_DISSIPATION: 1,
@@ -74,7 +74,8 @@ let config = {
     COLOR_UPDATE_TIME: 0,
     PAUSED: false,
     RANDOM_AMOUNT: 10,
-    RANDOM_REPEAT_DELAY: 0,
+    RANDOM_REPEAT: false,
+    RANDOM_REPEAT_DELAY: 1000,
     BACK_COLOR: 0x000000,
     TRANSPARENT: false,
     BLOOM: true,
@@ -232,9 +233,11 @@ function startGUI () {
             //const amount = parseInt(Math.random() * 20) + 5;
             const amount = config.RANDOM_AMOUNT;
             splatStack.push(amount);
-            const delay = config.RANDOM_REPEAT_DELAY;
-            if (delay) {
-                rndtimer = setTimeout(rnd, delay);
+            if (config.RANDOM_REPEAT) {
+                const delay = config.RANDOM_REPEAT_DELAY;
+                if (delay) {
+                    rndtimer = setTimeout(rnd, delay);
+                }
             }
         };
         if (rndtimer) {
@@ -244,6 +247,7 @@ function startGUI () {
         rnd();
     } }, 'fun').name('Random splats');
     gui.add(config, 'RANDOM_AMOUNT', 1, 100, 1).name('random splat amount');
+    gui.add(config, 'RANDOM_REPEAT').name('random repeat');
     gui.add(config, 'RANDOM_REPEAT_DELAY', 0, 5000).name('repeat delay (msec)');
 
     let bloomFolder = gui.addFolder('Bloom');
@@ -1512,7 +1516,7 @@ canvas.addEventListener('touchstart', e => {
         let posY = scaleByPixelRatio(touches[i].pageY);
         updatePointerDownData(pointers[i + 1], touches[i].identifier, posX, posY);
     }
-});
+}, { passive: true });
 
 canvas.addEventListener('touchmove', e => {
     e.preventDefault();
@@ -1524,7 +1528,7 @@ canvas.addEventListener('touchmove', e => {
         let posY = scaleByPixelRatio(touches[i].pageY);
         updatePointerMoveData(pointer, posX, posY);
     }
-}, false);
+}, { passive: true });
 
 window.addEventListener('touchend', e => {
     const touches = e.changedTouches;
