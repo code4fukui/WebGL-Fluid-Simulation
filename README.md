@@ -1,5 +1,7 @@
 # WebGL Fluid Simulation
 
+> 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
+
 A WebGL fluid simulation that works in mobile browsers.
 
 ## Demo
