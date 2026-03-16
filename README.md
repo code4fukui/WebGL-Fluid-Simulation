@@ -21,4 +21,4 @@ None. This is a client-side WebGL application.
 Open the HTML file in a web browser. The application will start running.
 
 ## License
-The code is available under the [MIT license](LICENSE).
+MIT License — see [LICENSE](LICENSE).
